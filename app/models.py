@@ -9,11 +9,26 @@ from sqlalchemy.orm import relationship
 import enum
 
 class UserRole(str, enum.Enum):
+    """
+    Enum for defining user roles.
+    Includes 'admin' and 'case_worker'.
+    """
     admin = "admin"
     case_worker = "case_worker"
 
 
 class User(Base):
+    """
+    User model representing a user in the system.
+
+    Fields:
+        - id: Primary key
+        - username: Unique username
+        - email: Unique email
+        - hashed_password: Encrypted password
+        - role: Role of the user (admin or case_worker)
+        - cases: Relationship to ClientCase
+    """
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -38,13 +53,27 @@ class Client(Base):
     dep_num = Column(Integer, CheckConstraint('dep_num >= 0'))
     canada_born = Column(Boolean)
     citizen_status = Column(Boolean)
-    level_of_schooling = Column(Integer, CheckConstraint('level_of_schooling >= 1 AND level_of_schooling <= 14'))
+    level_of_schooling = Column(
+        Integer,
+        CheckConstraint('level_of_schooling >= 1 AND level_of_schooling <= 14')
+        )
     fluent_english = Column(Boolean)
-    reading_english_scale = Column(Integer, CheckConstraint('reading_english_scale >= 0 AND reading_english_scale <= 10'))
-    speaking_english_scale = Column(Integer, CheckConstraint('speaking_english_scale >= 0 AND speaking_english_scale <= 10'))
-    writing_english_scale = Column(Integer, CheckConstraint('writing_english_scale >= 0 AND writing_english_scale <= 10'))
-    numeracy_scale = Column(Integer, CheckConstraint('numeracy_scale >= 0 AND numeracy_scale <= 10'))
-    computer_scale = Column(Integer, CheckConstraint('computer_scale >= 0 AND computer_scale <= 10'))
+    reading_english_scale = Column(
+        Integer,
+        CheckConstraint('reading_english_scale >= 0 AND reading_english_scale <= 10')
+        )
+    speaking_english_scale = Column(
+        Integer, CheckConstraint('speaking_english_scale >= 0 AND speaking_english_scale <= 10')
+        )
+    writing_english_scale = Column(
+        Integer, CheckConstraint('writing_english_scale >= 0 AND writing_english_scale <= 10')
+        )
+    numeracy_scale = Column(
+        Integer, CheckConstraint('numeracy_scale >= 0 AND numeracy_scale <= 10')
+        )
+    computer_scale = Column(
+        Integer, CheckConstraint('computer_scale >= 0 AND computer_scale <= 10')
+        )
     transportation_bool = Column(Boolean)
     caregiver_bool = Column(Boolean)
     housing = Column(Integer, CheckConstraint('housing >= 1 AND housing <= 10'))
@@ -59,11 +88,17 @@ class Client(Base):
     cases = relationship("ClientCase", back_populates="client")
 
 class ClientCase(Base):
+    """
+    Association model linking clients to users (case workers).
+    Stores services provided and client progress information.
+
+    Composite primary key: (client_id, user_id)
+    """
     __tablename__ = "client_cases"
 
     client_id = Column(Integer, ForeignKey("clients.id"), primary_key=True)
     user_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
-    
+
     employment_assistance = Column(Boolean)
     life_stabilization = Column(Boolean)
     retention_services = Column(Boolean)

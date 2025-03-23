@@ -11,6 +11,9 @@ from app.models import UserRole
 
 # Enums for validation
 class Gender(IntEnum):
+    """
+    Enumeration for gender: 1 for male, 2 for female.
+    """
     MALE = 1
     FEMALE = 2
 
@@ -45,6 +48,10 @@ class PredictionInput(BaseModel):
     need_mental_health_support_bool: str
 
 class ClientBase(BaseModel):
+    """
+    Base schema for client data.
+    Includes demographic, education, language, and employment information.
+    """
     age: int = Field(ge=18, description="Age of client, must be 18 or older")
     gender: Gender = Field(description="Gender: 1 for male, 2 for female")
     work_experience: int = Field(ge=0, description="Years of work experience")
@@ -101,12 +108,20 @@ class ClientBase(BaseModel):
         }
 
 class ClientResponse(ClientBase):
+    """
+    Schema for client response with database ID included.
+    Inherits from ClientBase and adds an `id` field.
+    """
     id: int
 
     class Config:
         from_attributes = True
 
 class ClientUpdate(BaseModel):
+    """
+    Schema for updating client data.
+    All fields are optional to allow partial updates.
+    """
     age: Optional[int] = Field(None, ge=18)
     gender: Optional[Gender] = None
     work_experience: Optional[int] = Field(None, ge=0)
@@ -133,6 +148,10 @@ class ClientUpdate(BaseModel):
     need_mental_health_support_bool: Optional[bool] = None
 
 class ServiceResponse(BaseModel):
+    """
+    Schema for service information related to a client.
+    Includes services provided and success rate.
+    """
     client_id: int
     user_id: int
     employment_assistance: bool
@@ -148,6 +167,10 @@ class ServiceResponse(BaseModel):
         from_attributes = True
 
 class ServiceUpdate(BaseModel):
+    """
+    Schema for updating client service data.
+    All fields are optional for partial updates.
+    """
     employment_assistance: Optional[bool] = None
     life_stabilization: Optional[bool] = None
     retention_services: Optional[bool] = None
@@ -158,5 +181,9 @@ class ServiceUpdate(BaseModel):
     success_rate: Optional[int] = Field(None, ge=0, le=100)
 
 class ClientListResponse(BaseModel):
+    """
+    Schema for returning a paginated list of clients and total count.
+    Used for API responses that return multiple clients.
+    """
     clients: List[ClientResponse]
     total: int
