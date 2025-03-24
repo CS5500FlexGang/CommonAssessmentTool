@@ -3,18 +3,21 @@ Router module for client-related endpoints.
 Handles all HTTP requests for client operations including create, read, update, and delete.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+# Standard library imports
+from typing import List, Optional
+
+# Third-party imports
+from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
-from typing import List, Optional, Type
 
+# Local imports
 from app.auth.router import get_current_user, get_admin_user
-from app.models import User, UserRole
 from app.database import get_db
-
+from app.models import User
 from app.clients.service.client_service import client_service
 from app.clients.schema import (
-    ClientResponse, 
-    ClientUpdate, 
+    ClientResponse,
+    ClientUpdate,
     ClientListResponse,
     ServiceResponse,
     ServiceUpdate
@@ -31,7 +34,7 @@ def get_service_with_db(db: Session = Depends(get_db)):
 @router.get("/", response_model=ClientListResponse)
 async def get_clients(
     service_and_db = Depends(get_service_with_db),
-    current_user: User = Depends(get_admin_user), 
+    current_user: User = Depends(get_admin_user),  # Required for authentication
     skip: int = Query(default=0, ge=0, description="Number of records to skip"),
     limit: int = Query(default=50, ge=1, le=150, description="Maximum number of records to return")
 ):
@@ -43,16 +46,18 @@ async def get_clients(
 async def get_client(
     client_id: int,
     service_and_db = Depends(get_service_with_db),
-    current_user: User = Depends(get_admin_user)
+    current_user: User = Depends(get_admin_user)  # Required for authentication
 ):
     """Get a specific client by ID"""
     service, db = service_and_db
     return service.get_client(db, client_id)
 
+# pylint: disable=too-many-arguments,too-many-locals
 @router.get("/search/by-criteria", response_model=List[ClientResponse])
 async def get_clients_by_criteria(
     service_and_db = Depends(get_service_with_db),
-    current_user: User = Depends(get_admin_user),
+    current_user: User = Depends(get_admin_user),  # Required for authentication
+    # Client demographic parameters
     employment_status: Optional[bool] = None,
     education_level: Optional[int] = Query(None, ge=1, le=14),
     age_min: Optional[int] = Query(None, ge=18),
@@ -62,12 +67,14 @@ async def get_clients_by_criteria(
     dep_num: Optional[int] = Query(None, ge=0),
     canada_born: Optional[bool] = None,
     citizen_status: Optional[bool] = None,
+    # Language and skills parameters
     fluent_english: Optional[bool] = None,
     reading_english_scale: Optional[int] = Query(None, ge=0, le=10),
     speaking_english_scale: Optional[int] = Query(None, ge=0, le=10),
     writing_english_scale: Optional[int] = Query(None, ge=0, le=10),
     numeracy_scale: Optional[int] = Query(None, ge=0, le=10),
     computer_scale: Optional[int] = Query(None, ge=0, le=10),
+    # Situation parameters
     transportation_bool: Optional[bool] = None,
     caregiver_bool: Optional[bool] = None,
     housing: Optional[int] = Query(None, ge=1, le=10),
@@ -107,11 +114,13 @@ async def get_clients_by_criteria(
         time_unemployed=time_unemployed,
         need_mental_health_support_bool=need_mental_health_support_bool
     )
+# pylint: enable=too-many-arguments,too-many-locals
 
+# pylint: disable=too-many-arguments
 @router.get("/search/by-services", response_model=List[ClientResponse])
 async def get_clients_by_services(
     service_and_db = Depends(get_service_with_db),
-    current_user: User = Depends(get_admin_user),
+    current_user: User = Depends(get_admin_user),  # Required for authentication
     employment_assistance: Optional[bool] = None,
     life_stabilization: Optional[bool] = None,
     retention_services: Optional[bool] = None,
@@ -132,12 +141,13 @@ async def get_clients_by_services(
         employer_financial_supports=employer_financial_supports,
         enhanced_referrals=enhanced_referrals
     )
+# pylint: enable=too-many-arguments
 
 @router.get("/{client_id}/services", response_model=List[ServiceResponse])
 async def get_client_services(
     client_id: int,
     service_and_db = Depends(get_service_with_db),
-    current_user: User = Depends(get_admin_user)
+    current_user: User = Depends(get_admin_user)  # Required for authentication
 ):
     """Get all services and their status for a specific client, including case worker info"""
     service, db = service_and_db
@@ -147,7 +157,7 @@ async def get_client_services(
 async def get_clients_by_success_rate(
     service_and_db = Depends(get_service_with_db),
     min_rate: int = Query(70, ge=0, le=100, description="Minimum success rate percentage"),
-    current_user: User = Depends(get_admin_user)
+    current_user: User = Depends(get_admin_user)  # Required for authentication
 ):
     """Get clients with success rate above specified threshold"""
     service, db = service_and_db
@@ -157,7 +167,7 @@ async def get_clients_by_success_rate(
 async def get_clients_by_case_worker(
     case_worker_id: int,
     service_and_db = Depends(get_service_with_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user)  # Required for authentication
 ):
     """Get clients assigned to a specific case worker"""
     service, db = service_and_db
@@ -168,7 +178,7 @@ async def update_client(
     client_id: int,
     client_data: ClientUpdate,
     service_and_db = Depends(get_service_with_db),
-    current_user: User = Depends(get_admin_user)
+    current_user: User = Depends(get_admin_user)  # Required for authentication
 ):
     """Update a client's information"""
     service, db = service_and_db
@@ -180,7 +190,7 @@ async def update_client_services(
     user_id: int,
     service_update: ServiceUpdate,
     service_and_db = Depends(get_service_with_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user)  # Required for authentication
 ):
     """Update services for a specific client and case worker"""
     service, db = service_and_db
@@ -191,7 +201,7 @@ async def create_case_assignment(
     client_id: int,
     service_and_db = Depends(get_service_with_db),
     case_worker_id: int = Query(..., description="Case worker ID to assign"),
-    current_user: User = Depends(get_admin_user)
+    current_user: User = Depends(get_admin_user)  # Required for authentication
 ):
     """Create a new case assignment for a client with a case worker"""
     service, db = service_and_db
@@ -201,7 +211,7 @@ async def create_case_assignment(
 async def delete_client(
     client_id: int,
     service_and_db = Depends(get_service_with_db),
-    current_user: User = Depends(get_admin_user)
+    current_user: User = Depends(get_admin_user)  # Required for authentication
 ):
     """Delete a client"""
     service, db = service_and_db

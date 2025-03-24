@@ -9,8 +9,8 @@ def initialize_database():
     db = SessionLocal()
     try:
         # Create admin user if doesn't exist
-        admin = db.query(User).filter(User.username == "admin").first()
-        if not admin:
+        admin_user = db.query(User).filter(User.username == "admin").first()
+        if not admin_user:
             admin_user = User(
                 username="admin",
                 email="admin@example.com",
