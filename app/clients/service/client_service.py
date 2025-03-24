@@ -93,9 +93,11 @@ class Repository(ABC):
     def get_by_id(self, db: Session, entity_id: int):
         """Get an entity by ID."""
 
+
     @abstractmethod
     def get_all(self, db: Session, skip: int = 0, limit: int = 50):
         """Get all entities."""
+
 
     @abstractmethod
     def update(self, db: Session, entity_id: int, data: dict):
@@ -110,6 +112,7 @@ class ClientRepository(Repository):
     """Repository for client data."""
 
     def get_by_id(self, db: Session, entity_id: int):
+
         """Get a client by ID."""
         client = db.query(Client).filter(Client.id == entity_id).first()
         if not client:
@@ -131,6 +134,7 @@ class ClientRepository(Repository):
         return {"clients": clients, "total": total}
 
     def update(self, db: Session, entity_id: int, data: Dict[str, Any]):
+
         """Update a client."""
         client = self.get_by_id(db, entity_id)
         for field, value in data.items():
@@ -147,6 +151,7 @@ class ClientRepository(Repository):
             ) from e
 
     def delete(self, db: Session, entity_id: int):
+
         """Delete a client."""
         client = self.get_by_id(db, entity_id)
         try:
@@ -320,6 +325,7 @@ class ClientServiceImpl:
     def update_client_services(
         self, db: Session, client_id: int, user_id: int, service_update: ServiceUpdate
     ):
+
         """Update client services."""
         update_data = service_update.dict(exclude_unset=True)
         return self.client_case_repository.update(db, client_id, user_id, update_data)

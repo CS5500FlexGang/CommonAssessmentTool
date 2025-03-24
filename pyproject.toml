@@ -52,3 +52,4 @@ python_files = "test_*.py"
 
 [tool.setuptools]
 package-dir = {"" = "app"}
+
