@@ -13,6 +13,9 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
+from sklearn.linear_model import LinearRegression
+from sklearn.svm import SVR
+from sklearn.ensemble import GradientBoostingRegressor
 
 
 class ModelTrainer(ABC):
@@ -42,8 +45,14 @@ class ModelPersistence(ABC):
 class RandomForestTrainer(ModelTrainer):
     """Concrete implementation of Random Forest Regressor model trainer for success rate prediction."""
     
-    def __init__(self, data_path='data_commontool.csv'):
-        self.data_path = data_path
+    def __init__(self, data_path=None):
+        if data_path is None:
+            base_dir = os.path.dirname(__file__)  
+            self.data_path = os.path.join(base_dir, "data_commontool.csv")
+        else:
+            self.data_path = data_path
+
+        # Columns expected from CSV data for training
         self.feature_columns = [
             'age',                    # Client's age
             'gender',                 # Client's gender (bool)
@@ -98,9 +107,15 @@ class RandomForestTrainer(ModelTrainer):
 
 class LinearRegressionTrainer(ModelTrainer):
     """Concrete implementation of Linear Regression model trainer for success rate prediction."""
-    
-    def __init__(self, data_path='data_commontool.csv'):
-        self.data_path = data_path
+
+    def __init__(self, data_path=None):
+        if data_path is None:
+            base_dir = os.path.dirname(__file__)  
+            self.data_path = os.path.join(base_dir, "data_commontool.csv")
+        else:
+            self.data_path = data_path
+
+        # Columns expected from CSV data for training
         self.feature_columns = [
             'age',                    # Client's age
             'gender',                 # Client's gender (bool)
@@ -148,7 +163,7 @@ class LinearRegressionTrainer(ModelTrainer):
     def train_model(self):
         """Train the model."""
         features_train, _, targets_train, _ = self.prepare_data()
-        model = RandomForestRegressor(n_estimators=100, random_state=42)
+        model = LinearRegression()
         model.fit(features_train, targets_train)
         return model
 
@@ -156,8 +171,14 @@ class LinearRegressionTrainer(ModelTrainer):
 class SVRTrainer(ModelTrainer):
     """Concrete implementation of Support Vector Regression model trainer for success rate prediction."""
     
-    def __init__(self, data_path='data_commontool.csv'):
-        self.data_path = data_path
+    def __init__(self, data_path=None):
+        if data_path is None:
+            base_dir = os.path.dirname(__file__)  
+            self.data_path = os.path.join(base_dir, "data_commontool.csv")
+        else:
+            self.data_path = data_path
+
+        # Columns expected from CSV data for training
         self.feature_columns = [
             'age',                    # Client's age
             'gender',                 # Client's gender (bool)
@@ -205,16 +226,23 @@ class SVRTrainer(ModelTrainer):
     def train_model(self):
         """Train the model."""
         features_train, _, targets_train, _ = self.prepare_data()
-        model = RandomForestRegressor(n_estimators=100, random_state=42)
+        model = SVR(kernel='rbf', C=1.0, epsilon=0.1)
         model.fit(features_train, targets_train)
         return model
 
 
 class GradientBoostingTrainer(ModelTrainer):
     """Concrete implementation of Gradient Boosting Regressor model trainer for success rate prediction."""
-    
-    def __init__(self, data_path='data_commontool.csv'):
-        self.data_path = data_path
+
+
+    def __init__(self, data_path=None):
+        if data_path is None:
+            base_dir = os.path.dirname(__file__) 
+            self.data_path = os.path.join(base_dir, "data_commontool.csv")
+        else:
+            self.data_path = data_path
+
+        # Columns expected from CSV data for training
         self.feature_columns = [
             'age',                    # Client's age
             'gender',                 # Client's gender (bool)
@@ -262,7 +290,7 @@ class GradientBoostingTrainer(ModelTrainer):
     def train_model(self):
         """Train the model."""
         features_train, _, targets_train, _ = self.prepare_data()
-        model = RandomForestRegressor(n_estimators=100, random_state=42)
+        model = GradientBoostingRegressor(n_estimators=100, random_state=42)
         model.fit(features_train, targets_train)
         return model
 
@@ -296,6 +324,7 @@ class ModelManagerFactory:
         self.loaded_models = {}
         self.current_model_name = "random_forest"
         os.makedirs(models_dir, exist_ok=True)
+        # this can auto initialize all models if it not trained yet
         self._ensure_all_models_exist()
     
     def _ensure_all_models_exist(self):
