@@ -165,29 +165,42 @@ class InterventionMatrix:
 
 
 class ModelPredictor:
-    """Predictor using a trained model."""
+    """Predictor using model manager for predictions."""
 
     def __init__(self, model_path=None):
-        self.model_path = model_path or os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), 'model.pkl'
-        )
-        self._load_model()
-
-    def _load_model(self):
-        """Load the model from file."""
-        with open(self.model_path, "rb") as model_file:
-            self.model = pickle.load(model_file)
-
+        """
+        Initialize predictor.
+        
+        Args:
+            model_path: Kept for backward compatibility
+        """
+        # Import model manager here to avoid circular imports
+        from app.clients.service.model_manager import model_manager
+        self.model_manager = model_manager
+        # Keep model_path for backward compatibility
+        self.model_path = model_path
+    
     def predict(self, data):
-        """Make predictions using the loaded model."""
-        return self.model.predict(data)
-
+        """
+        Make prediction using the current active model.
+        
+        Args:
+            data: Input data
+            
+        Returns:
+            np.ndarray: Prediction results
+        """
+        return self.model_manager.predict(data)
+    
 
 class ResultProcessor:
     """Processor for prediction results."""
 
     def __init__(self, intervention_matrix):
         self.intervention_matrix = intervention_matrix
+        # Import model manager here to avoid circular imports
+        from app.clients.service.model_manager import model_manager
+        self.model_manager = model_manager
 
     def process_results(self, baseline_pred, results_matrix):
         """
@@ -198,15 +211,17 @@ class ResultProcessor:
             results_matrix (np.array): Matrix of results
 
         Returns:
-            dict: Processed results with baseline and interventions
+            dict: Processed results with baseline, interventions, and model info
         """
         result_list = [
             (row[-1], self.intervention_matrix.intervention_row_to_names(row[:-1]))
             for row in results_matrix
         ]
+        
         return {
             "baseline": baseline_pred[-1],
-            "interventions": result_list
+            "interventions": result_list,
+            "model_used": self.model_manager.get_current_model_name()  # Add model name
         }
 
 

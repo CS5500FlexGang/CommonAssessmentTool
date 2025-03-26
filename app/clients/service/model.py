@@ -1,4 +1,5 @@
 """
+DEPRECATED: this model.py is being replaced by model_manager.py.
 Model training module for the Common Assessment Tool.
 Handles the preparation, training, and saving of the prediction model.
 """
