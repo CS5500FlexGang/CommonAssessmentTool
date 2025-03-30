@@ -31,7 +31,7 @@ This also has an API file to interact with the front end, and logic in order to 
 
 5. Log in as admin (username: `admin` password: `admin123`)
 
-6. Click on each endpoint to use
+6. Click on each endpoint to use -Create User (Only users in admin role can create new users. The role field needs to be either "admin" or "case_worker")
 
 -------------------------How to Use (With Docker)-------------------------
 Option 1: Using Docker CLI
@@ -46,7 +46,7 @@ Option 1: Using Docker CLI
 
 5. Log in as admin (username: `admin` password: `admin123`)
 
-6. Click on each endpoint to use
+6. Click on each endpoint to use -Create User (Only users in admin role can create new users. The role field needs to be either "admin" or "case_worker")
 
 Option 2: Using Docker Compose
 
@@ -58,7 +58,7 @@ Option 2: Using Docker Compose
 
 4. Log in as admin (username: `admin` password: `admin123`)
 
-5. Click on each endpoint to use
+5. Click on each endpoint to use -Create User (Only users in admin role can create new users. The role field needs to be either "admin" or "case_worker")
 
 -Create User (Only users in admin role can create new users. The role field needs to be either "admin" or "case_worker")
 
