@@ -34,18 +34,31 @@ This also has an API file to interact with the front end, and logic in order to 
 6. Click on each endpoint to use
 
 -------------------------How to Use (With Docker)-------------------------
+Option 1: Using Docker CLI
 
 1. Build the Docker image (`docker build -t fastapi-app .`)
 
-2. Run the Docker container (`docker build -t fastapi-app .`)
+2. Run the Docker container (`docker run -d -p 8000:8000 --name fastapi-backend fastapi-app`)
 
-3. Load data into database (`docker exec -it my_app_container python initialize_data.py`)
+3. Load data into database (`docker exec -it fastapi-backend python initialize_data.py`)
 
 4. Go to SwaggerUI (`http://127.0.0.1:8000/docs`)
 
 5. Log in as admin (username: `admin` password: `admin123`)
 
 6. Click on each endpoint to use
+
+Option 2: Using Docker Compose
+
+1. Start the application(`docker-compose up -d`)
+
+2. Load data into database (`docker exec -it fastapi-backend python initialize_data.py`)
+
+3. Go to SwaggerUI (`http://127.0.0.1:8000/docs`)
+
+4. Log in as admin (username: `admin` password: `admin123`)
+
+5. Click on each endpoint to use
 
 -Create User (Only users in admin role can create new users. The role field needs to be either "admin" or "case_worker")
 
