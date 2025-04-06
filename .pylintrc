@@ -430,7 +430,24 @@ disable=raw-checker-failed,
         deprecated-pragma,
         use-symbolic-message-instead,
         use-implicit-booleaness-not-comparison-to-string,
-        use-implicit-booleaness-not-comparison-to-zero
+        use-implicit-booleaness-not-comparison-to-zero,
+        C0111,  # missing-docstring
+        C0103,  # invalid-name
+        C0303,  # trailing-whitespace
+        C0301,  # line-too-long
+        C0304,  # missing-final-newline
+        C0305,  # trailing-newlines
+        C0411,  # wrong-import-order
+        C0412,  # ungrouped-imports
+        C0201,  # consider-iterating-dictionary
+        R0903,  # too-few-public-methods
+        W0613,  # unused-argument
+        W0611,  # unused-import
+        W0621,  # redefined-outer-name
+        W0105,  # pointless-string-statement
+        W0707,  # raise-missing-from
+        E0213,  # no-self-argument
+        R0801   # duplicate-code
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
