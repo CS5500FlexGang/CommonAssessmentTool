@@ -439,6 +439,7 @@ disable=raw-checker-failed,
         C0305,  # trailing-newlines
         C0411,  # wrong-import-order
         C0412,  # ungrouped-imports
+        C0415,  # import-outside-toplevel
         C0201,  # consider-iterating-dictionary
         R0903,  # too-few-public-methods
         W0613,  # unused-argument
