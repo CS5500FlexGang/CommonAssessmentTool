@@ -83,3 +83,44 @@ Option 2: Using Docker Compose
 -Update client services (Allow users to update the service status of a case.)
 
 -Create case assignment (Allow authorized users to create a new case assignment.)
+
+-------------------------CI/CD Pipeline-------------------------
+
+This project includes a continuous integration (CI) pipeline built with GitHub Actions that helps maintain code quality and ensure the application runs correctly.
+
+### CI Pipeline Features
+
+- **Automated Code Checks**: The pipeline runs linters (pylint, flake8) and formatters (black) to ensure code quality and consistency.
+- **Automated Testing**: All tests are automatically run to verify that changes don't break existing functionality.
+- **Docker Validation**: The pipeline builds and runs the Docker container to ensure it works as expected.
+
+### CI Pipeline Triggers
+
+The CI pipeline is automatically triggered on:
+- Pushes to main, docker, elisaa, and ci-pipeline branches
+- Pull requests to the main branch
+
+### How to View Pipeline Results
+
+1. Go to the "Actions" tab in the GitHub repository
+2. Click on the most recent workflow run to view details
+3. Expand job sections to see individual steps and their output
+
+### Local Development with CI in Mind
+
+Before pushing your changes, you can run the same checks locally:
+
+```bash
+# Run linters
+pylint app/
+flake8 app/ --count --select=E9,F63,F7,F82 --show-source --statistics
+
+# Run formatter
+black app/
+
+# Run tests
+python -m pytest tests/
+
+# Build and test Docker image
+docker build -t fastapi-app .
+docker run -d -p 8000:8000 --name fastapi-backend fastapi-app
