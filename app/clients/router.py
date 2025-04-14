@@ -42,7 +42,7 @@ async def get_clients(
         default=50, ge=1, le=150, description="Maximum number of records to return"
     ),
 ):
-    """Get all clients with pagination."""
+    """Get all clients with pagination - Updated by CD pipeline v1.0.3."""
     service, db = service_and_db
     return service.get_clients(db, skip, limit)
 
