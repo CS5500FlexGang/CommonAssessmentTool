@@ -136,3 +136,74 @@ http://3.142.42.78:8000/docs
 ## Deployment Information
 - Hosted on AWS EC2
 - Region: us-east-2
+```
+
+------------------------- Setting Up the Deployment Pipeline -------------------------
+### SSH Key Configuration
+# Generate an SSH key pair
+```bash
+ssh-keygen -t rsa -b 4096 -C "github-actions"
+```
+# Add the public key to your VM's authorized_keys file
+```bash
+cat ~/.ssh/id_rsa.pub | ssh your_username@your-vm-ip "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys"
+```
+
+# Add the private key as a GitHub secret:
+Go to your GitHub repository → Settings → Secrets and variables → Actions
+Create a new secret named SSH_PRIVATE_KEY with the content of your private key
+
+# Add two more required secrets:
+VM_HOST: The hostname or IP address of your VM
+VM_USER: The username for SSH login (e.g., ec2-user)
+
+### Docker Setup on VM
+# Ensure Docker is installed and running on your VM
+```bash
+sudo yum update -y
+sudo yum install -y docker
+sudo systemctl start docker
+sudo systemctl enable docker
+sudo usermod -a -G docker $USER
+```
+
+### The CD Workflow File
+The CD workflow is defined in .github/workflows/cd.yml. It triggers whenever a release is created from the master branch.
+# Creating a New Release
+To deploy a new version of the application:
+1. Make your code changes and push them to the main branch
+2. Go to your GitHub repository
+3. Click on "Releases" in the right sidebar
+4. Click "Create a new release"
+5. Enter a tag version (e.g., v1.0.4)
+6. Add a title and description
+7. Click "Publish release"
+The CD workflow will automatically trigger and deploy your changes to the VM.
+
+### Monitoring Deployments
+To monitor the deployment process:
+Go to the "Actions" tab in your GitHub repository
+Click on the running or most recent "Continuous Deployment" workflow
+View the logs for each step of the deployment
+
+### Verifying Deployment
+To verify that your deployment was successful:
+Access your API documentation at: http://your-vm-ip:8000/docs
+Check that your changes are visible
+Test the API endpoints to ensure functionality
+
+### Troubleshooting
+# Port Already in Use
+If you see an error like:
+```bash
+Error: listen tcp4 0.0.0.0:8000: bind: address already in use
+```
+SSH into your VM and:
+```bash
+# Find the process using port 8000
+sudo lsof -i :8000
+# Kill the process
+sudo kill -9 [PID]
+```
+
+
