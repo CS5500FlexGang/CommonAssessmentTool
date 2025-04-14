@@ -29,26 +29,25 @@ class ClientValidator(Validator):
 
     def validate(self, **kwargs):
         """Validate client data."""
-        education_level = kwargs.get('education_level')
-        age_min = kwargs.get('age_min')
-        gender = kwargs.get('gender')
+        education_level = kwargs.get("education_level")
+        age_min = kwargs.get("age_min")
+        gender = kwargs.get("gender")
 
         if education_level is not None and not 1 <= education_level <= 14:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Education level must be between 1 and 14"
+                detail="Education level must be between 1 and 14",
             )
 
         if age_min is not None and age_min < 18:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Minimum age must be at least 18"
+                detail="Minimum age must be at least 18",
             )
 
         if gender is not None and gender not in [1, 2]:
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Gender must be 1 or 2"
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Gender must be 1 or 2"
             )
 
 
@@ -71,7 +70,7 @@ class ClientQueryBuilder(QueryBuilder):
         self.validator.validate(
             education_level=filters.get("level_of_schooling"),
             age_min=filters.get("age"),
-            gender=filters.get("gender")
+            gender=filters.get("gender"),
         )
 
         query = db.query(Client)
@@ -93,11 +92,9 @@ class Repository(ABC):
     def get_by_id(self, db: Session, entity_id: int):
         """Get an entity by ID."""
 
-
     @abstractmethod
     def get_all(self, db: Session, skip: int = 0, limit: int = 50):
         """Get all entities."""
-
 
     @abstractmethod
     def update(self, db: Session, entity_id: int, data: dict):
@@ -112,13 +109,12 @@ class ClientRepository(Repository):
     """Repository for client data."""
 
     def get_by_id(self, db: Session, entity_id: int):
-
         """Get a client by ID."""
         client = db.query(Client).filter(Client.id == entity_id).first()
         if not client:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Client with id {entity_id} not found"
+                detail=f"Client with id {entity_id} not found",
             )
         return client
 
@@ -134,7 +130,6 @@ class ClientRepository(Repository):
         return {"clients": clients, "total": total}
 
     def update(self, db: Session, entity_id: int, data: Dict[str, Any]):
-
         """Update a client."""
         client = self.get_by_id(db, entity_id)
         for field, value in data.items():
@@ -146,12 +141,10 @@ class ClientRepository(Repository):
         except Exception as e:
             db.rollback()
             raise HTTPException(
-                status_code=500, 
-                detail=f"Failed to update client: {str(e)}"
+                status_code=500, detail=f"Failed to update client: {str(e)}"
             ) from e
 
     def delete(self, db: Session, entity_id: int):
-
         """Delete a client."""
         client = self.get_by_id(db, entity_id)
         try:
@@ -161,8 +154,7 @@ class ClientRepository(Repository):
         except Exception as e:
             db.rollback()
             raise HTTPException(
-                status_code=500, 
-                detail=f"Failed to delete client: {str(e)}"
+                status_code=500, detail=f"Failed to delete client: {str(e)}"
             ) from e
 
 
@@ -171,20 +163,23 @@ class ClientCaseRepository:
 
     def get_by_client_id(self, db: Session, client_id: int):
         """Get client cases by client ID."""
-        client_cases = db.query(ClientCase).filter(ClientCase.client_id == client_id).all()
+        client_cases = (
+            db.query(ClientCase).filter(ClientCase.client_id == client_id).all()
+        )
         if not client_cases:
             raise HTTPException(
                 status_code=404,
-                detail=f"No services found for client with id {client_id}"
+                detail=f"No services found for client with id {client_id}",
             )
         return client_cases
 
     def get_by_client_and_user(self, db: Session, client_id: int, user_id: int):
         """Get client case by client ID and user ID."""
-        client_case = db.query(ClientCase).filter(
-            ClientCase.client_id == client_id,
-            ClientCase.user_id == user_id
-        ).first()
+        client_case = (
+            db.query(ClientCase)
+            .filter(ClientCase.client_id == client_id, ClientCase.user_id == user_id)
+            .first()
+        )
         if not client_case:
             message = (
                 f"No case found for client {client_id} with case worker {user_id}. "
@@ -205,20 +200,20 @@ class ClientCaseRepository:
         except Exception as e:
             db.rollback()
             raise HTTPException(
-                status_code=500,
-                detail=f"Failed to update client services: {str(e)}"
+                status_code=500, detail=f"Failed to update client services: {str(e)}"
             ) from e
 
     def create(self, db: Session, client_id: int, user_id: int):
         """Create a new client case."""
-        existing_case = db.query(ClientCase).filter(
-            ClientCase.client_id == client_id,
-            ClientCase.user_id == user_id
-        ).first()
+        existing_case = (
+            db.query(ClientCase)
+            .filter(ClientCase.client_id == client_id, ClientCase.user_id == user_id)
+            .first()
+        )
         if existing_case:
             raise HTTPException(
                 status_code=400,
-                detail=f"Client {client_id} already has a case assigned to case worker {user_id}"
+                detail=f"Client {client_id} already has a case assigned to case worker {user_id}",
             )
         try:
             new_case = ClientCase(
@@ -231,7 +226,7 @@ class ClientCaseRepository:
                 employment_related_financial_supports=False,
                 employer_financial_supports=False,
                 enhanced_referrals=False,
-                success_rate=0
+                success_rate=0,
             )
             db.add(new_case)
             db.commit()
@@ -240,21 +235,19 @@ class ClientCaseRepository:
         except Exception as e:
             db.rollback()
             raise HTTPException(
-                status_code=500,
-                detail=f"Failed to create case assignment: {str(e)}"
+                status_code=500, detail=f"Failed to create case assignment: {str(e)}"
             ) from e
 
 
 class UserRepository:
     """Repository for user data."""
-    
+
     def get_by_id(self, db: Session, entity_id: int):
         """Get a user by ID."""
         user = db.query(User).filter(User.id == entity_id).first()
         if not user:
             raise HTTPException(
-                status_code=404,
-                detail=f"Case worker with id {entity_id} not found"
+                status_code=404, detail=f"Case worker with id {entity_id} not found"
             )
         return user
 
@@ -267,7 +260,7 @@ class ClientServiceImpl:
         client_repo: ClientRepository,
         case_repo: ClientCaseRepository,
         user_repo: UserRepository,
-        query_builder: ClientQueryBuilder
+        query_builder: ClientQueryBuilder,
     ):
         self.client_repository = client_repo
         self.client_case_repository = case_repo
@@ -303,8 +296,15 @@ class ClientServiceImpl:
     def get_clients_by_success_rate(self, db: Session, min_rate: int = 70):
         """Get clients by success rate."""
         if not 0 <= min_rate <= 100:
-            raise HTTPException(status_code=400, detail="Success rate must be between 0 and 100")
-        return db.query(Client).join(ClientCase).filter(ClientCase.success_rate >= min_rate).all()
+            raise HTTPException(
+                status_code=400, detail="Success rate must be between 0 and 100"
+            )
+        return (
+            db.query(Client)
+            .join(ClientCase)
+            .filter(ClientCase.success_rate >= min_rate)
+            .all()
+        )
 
     def get_clients_by_case_worker(self, db: Session, case_worker_id: int):
         """Get clients by case worker ID."""
@@ -325,7 +325,6 @@ class ClientServiceImpl:
     def update_client_services(
         self, db: Session, client_id: int, user_id: int, service_update: ServiceUpdate
     ):
-
         """Update client services."""
         update_data = service_update.dict(exclude_unset=True)
         return self.client_case_repository.update(db, client_id, user_id, update_data)
@@ -355,6 +354,5 @@ client_service = ClientServiceImpl(
     client_repo=_client_repo,
     case_repo=_case_repo,
     user_repo=_user_repo,
-    query_builder=_query_builder
+    query_builder=_query_builder,
 )
-

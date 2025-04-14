@@ -35,13 +35,30 @@ class InputDataCleaner(DataProcessor):
             list: Cleaned and formatted data ready for model input
         """
         columns = [
-            "age", "gender", "work_experience", "canada_workex", "dep_num",
-            "canada_born", "citizen_status", "level_of_schooling", "fluent_english",
-            "reading_english_scale", "speaking_english_scale", "writing_english_scale",
-            "numeracy_scale", "computer_scale", "transportation_bool", "caregiver_bool",
-            "housing", "income_source", "felony_bool", "attending_school",
-            "currently_employed", "substance_use", "time_unemployed",
-            "need_mental_health_support_bool"
+            "age",
+            "gender",
+            "work_experience",
+            "canada_workex",
+            "dep_num",
+            "canada_born",
+            "citizen_status",
+            "level_of_schooling",
+            "fluent_english",
+            "reading_english_scale",
+            "speaking_english_scale",
+            "writing_english_scale",
+            "numeracy_scale",
+            "computer_scale",
+            "transportation_bool",
+            "caregiver_bool",
+            "housing",
+            "income_source",
+            "felony_bool",
+            "attending_school",
+            "currently_employed",
+            "substance_use",
+            "time_unemployed",
+            "need_mental_health_support_bool",
         ]
         demographics = {key: input_data[key] for key in columns}
         output = []
@@ -63,33 +80,47 @@ class InputDataCleaner(DataProcessor):
             int: Converted numerical value
         """
         categorical_mappings = [
+            {"": 0, "true": 1, "false": 0, "no": 0, "yes": 1, "No": 0, "Yes": 1},
             {
-                "": 0, "true": 1, "false": 0, "no": 0, "yes": 1,
-                "No": 0, "Yes": 1
+                "Grade 0-8": 1,
+                "Grade 9": 2,
+                "Grade 10": 3,
+                "Grade 11": 4,
+                "Grade 12 or equivalent": 5,
+                "OAC or Grade 13": 6,
+                "Some college": 7,
+                "Some university": 8,
+                "Some apprenticeship": 9,
+                "Certificate of Apprenticeship": 10,
+                "Journeyperson": 11,
+                "Certificate/Diploma": 12,
+                "Bachelor's degree": 13,
+                "Post graduate": 14,
             },
             {
-                "Grade 0-8": 1, "Grade 9": 2, "Grade 10": 3, "Grade 11": 4,
-                "Grade 12 or equivalent": 5, "OAC or Grade 13": 6,
-                "Some college": 7, "Some university": 8, "Some apprenticeship": 9,
-                "Certificate of Apprenticeship": 10, "Journeyperson": 11,
-                "Certificate/Diploma": 12, "Bachelor's degree": 13,
-                "Post graduate": 14
+                "Renting-private": 1,
+                "Renting-subsidized": 2,
+                "Boarding or lodging": 3,
+                "Homeowner": 4,
+                "Living with family/friend": 5,
+                "Institution": 6,
+                "Temporary second residence": 7,
+                "Band-owned home": 8,
+                "Homeless or transient": 9,
+                "Emergency hostel": 10,
             },
             {
-                "Renting-private": 1, "Renting-subsidized": 2,
-                "Boarding or lodging": 3, "Homeowner": 4,
-                "Living with family/friend": 5, "Institution": 6,
-                "Temporary second residence": 7, "Band-owned home": 8,
-                "Homeless or transient": 9, "Emergency hostel": 10
-            },
-            {
-                "No Source of Income": 1, "Employment Insurance": 2,
+                "No Source of Income": 1,
+                "Employment Insurance": 2,
                 "Workplace Safety and Insurance Board": 3,
                 "Ontario Works applied or receiving": 4,
                 "Ontario Disability Support Program applied or receiving": 5,
-                "Dependent of someone receiving OW or ODSP": 6, "Crown Ward": 7,
-                "Employment": 8, "Self-Employment": 9, "Other (specify)": 10
-            }
+                "Dependent of someone receiving OW or ODSP": 6,
+                "Crown Ward": 7,
+                "Employment": 8,
+                "Self-Employment": 9,
+                "Other (specify)": 10,
+            },
         ]
         for category in categorical_mappings:
             if text_data in category:
@@ -103,13 +134,13 @@ class InterventionMatrix:
 
     def __init__(self):
         self.column_interventions = [
-            'Life Stabilization',
-            'General Employment Assistance Services',
-            'Retention Services',
-            'Specialized Services',
-            'Employment-Related Financial Supports for Job Seekers and Employers',
-            'Employer Financial Supports',
-            'Enhanced Referrals for Skills Development'
+            "Life Stabilization",
+            "General Employment Assistance Services",
+            "Retention Services",
+            "Specialized Services",
+            "Employment-Related Financial Supports for Job Seekers and Employers",
+            "Employer Financial Supports",
+            "Enhanced Referrals for Skills Development",
         ]
 
     def create_matrix(self, row_data):
@@ -161,7 +192,11 @@ class InterventionMatrix:
         Returns:
             list: Names of active interventions
         """
-        return [self.column_interventions[i] for i, value in enumerate(row_data) if value == 1]
+        return [
+            self.column_interventions[i]
+            for i, value in enumerate(row_data)
+            if value == 1
+        ]
 
 
 class ModelPredictor:
@@ -170,28 +205,29 @@ class ModelPredictor:
     def __init__(self, model_path=None):
         """
         Initialize predictor.
-        
+
         Args:
             model_path: Kept for backward compatibility
         """
         # Import model manager here to avoid circular imports
         from app.clients.service.model_manager import model_manager
+
         self.model_manager = model_manager
         # Keep model_path for backward compatibility
         self.model_path = model_path
-    
+
     def predict(self, data):
         """
         Make prediction using the current active model.
-        
+
         Args:
             data: Input data
-            
+
         Returns:
             np.ndarray: Prediction results
         """
         return self.model_manager.predict(data)
-    
+
 
 class ResultProcessor:
     """Processor for prediction results."""
@@ -200,6 +236,7 @@ class ResultProcessor:
         self.intervention_matrix = intervention_matrix
         # Import model manager here to avoid circular imports
         from app.clients.service.model_manager import model_manager
+
         self.model_manager = model_manager
 
     def process_results(self, baseline_pred, results_matrix):
@@ -217,23 +254,30 @@ class ResultProcessor:
             (row[-1], self.intervention_matrix.intervention_row_to_names(row[:-1]))
             for row in results_matrix
         ]
-        
+
         return {
             "baseline": baseline_pred[-1],
             "interventions": result_list,
-            "model_used": self.model_manager.get_current_model_name()  # Add model name
+            "model_used": self.model_manager.get_current_model_name(),  # Add model name
         }
 
 
 class InterventionAnalyzer:
     """Analyzer for client interventions."""
 
-    def __init__(self, data_cleaner=None, intervention_matrix=None, model_predictor=None,
-                 result_processor=None):
+    def __init__(
+        self,
+        data_cleaner=None,
+        intervention_matrix=None,
+        model_predictor=None,
+        result_processor=None,
+    ):
         self.data_cleaner = data_cleaner or InputDataCleaner()
         self.intervention_matrix = intervention_matrix or InterventionMatrix()
         self.model_predictor = model_predictor or ModelPredictor()
-        self.result_processor = result_processor or ResultProcessor(self.intervention_matrix)
+        self.result_processor = result_processor or ResultProcessor(
+            self.intervention_matrix
+        )
 
     def analyze(self, input_data):
         """
@@ -246,11 +290,17 @@ class InterventionAnalyzer:
             dict: Processed results with recommendations
         """
         raw_data = self.data_cleaner.process(input_data)
-        baseline_row = self.intervention_matrix.get_baseline_row(raw_data).reshape(1, -1)
+        baseline_row = self.intervention_matrix.get_baseline_row(raw_data).reshape(
+            1, -1
+        )
         intervention_rows = self.intervention_matrix.create_matrix(raw_data)
         baseline_prediction = self.model_predictor.predict(baseline_row)
-        intervention_predictions = self.model_predictor.predict(intervention_rows).reshape(-1, 1)
-        result_matrix = np.concatenate((intervention_rows, intervention_predictions), axis=1)
+        intervention_predictions = self.model_predictor.predict(
+            intervention_rows
+        ).reshape(-1, 1)
+        result_matrix = np.concatenate(
+            (intervention_rows, intervention_predictions), axis=1
+        )
         result_order = result_matrix[:, -1].argsort()
         result_matrix = result_matrix[result_order]
         top_results = result_matrix[-3:, -8:]
@@ -265,10 +315,7 @@ def create_intervention_analyzer():
     model_predictor = ModelPredictor()
     result_processor = ResultProcessor(intervention_matrix)
     return InterventionAnalyzer(
-        data_cleaner, 
-        intervention_matrix, 
-        model_predictor, 
-        result_processor
+        data_cleaner, intervention_matrix, model_predictor, result_processor
     )
 
 
@@ -289,17 +336,30 @@ def interpret_and_calculate(input_data):
 
 if __name__ == "__main__":
     test_data = {
-        "age": "23", "gender": "1", "work_experience": "1",
-        "canada_workex": "1", "dep_num": "0", "canada_born": "1",
-        "citizen_status": "2", "level_of_schooling": "2",
-        "fluent_english": "3", "reading_english_scale": "2",
-        "speaking_english_scale": "2", "writing_english_scale": "3",
-        "numeracy_scale": "2", "computer_scale": "3",
-        "transportation_bool": "2", "caregiver_bool": "1",
-        "housing": "1", "income_source": "5", "felony_bool": "1",
-        "attending_school": "0", "currently_employed": "1",
-        "substance_use": "1", "time_unemployed": "1",
-        "need_mental_health_support_bool": "1"
+        "age": "23",
+        "gender": "1",
+        "work_experience": "1",
+        "canada_workex": "1",
+        "dep_num": "0",
+        "canada_born": "1",
+        "citizen_status": "2",
+        "level_of_schooling": "2",
+        "fluent_english": "3",
+        "reading_english_scale": "2",
+        "speaking_english_scale": "2",
+        "writing_english_scale": "3",
+        "numeracy_scale": "2",
+        "computer_scale": "3",
+        "transportation_bool": "2",
+        "caregiver_bool": "1",
+        "housing": "1",
+        "income_source": "5",
+        "felony_bool": "1",
+        "attending_school": "0",
+        "currently_employed": "1",
+        "substance_use": "1",
+        "time_unemployed": "1",
+        "need_mental_health_support_bool": "1",
     }
     results = interpret_and_calculate(test_data)
     print(results)

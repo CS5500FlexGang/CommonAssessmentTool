@@ -22,23 +22,27 @@ from sqlalchemy.orm import Session
 # SCHEMAS for api responses
 class ModelInfo(BaseModel):
     """Model data to be used in responses."""
+
     name: str
     description: str
 
 
 class ModelListResponse(BaseModel):
     """Response schema for the available models."""
+
     models: List[str]
     current_model: str
 
 
 class ModelSwitchRequest(BaseModel):
     """Request body schema for switching model."""
+
     model_name: str
 
 
 class ModelSwitchResponse(BaseModel):
     """Response schema after switching model."""
+
     success: bool
     current_model: str
     message: str
@@ -46,6 +50,7 @@ class ModelSwitchResponse(BaseModel):
 
 class ModelComparisonResponse(BaseModel):
     """Response schema for model comparison output."""
+
     model_results: Dict[str, float]
     client_info: Dict[str, Any]
 
@@ -59,7 +64,7 @@ async def get_available_models(current_user: User = Depends(get_current_user)):
     """Retrieve all available ML models and the currently active model."""
     return {
         "models": model_manager.get_available_models(),
-        "current_model": model_manager.get_current_model_name()
+        "current_model": model_manager.get_current_model_name(),
     }
 
 
@@ -72,20 +77,20 @@ async def get_current_model(current_user: User = Depends(get_current_user)):
 @router.post("/switch", response_model=ModelSwitchResponse)
 async def switch_model(
     request: ModelSwitchRequest,
-    current_user: User = Depends(get_admin_user)  # Only admin can switch models
+    current_user: User = Depends(get_admin_user),  # Only admin can switch models
 ):
     """Switch to a specified ML model."""
     success = model_manager.set_model(request.model_name)
     if not success:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Model '{request.model_name}' not found"
+            detail=f"Model '{request.model_name}' not found",
         )
-    
+
     return {
         "success": True,
         "current_model": model_manager.get_current_model_name(),
-        "message": f"Successfully switched to model: {request.model_name}"
+        "message": f"Successfully switched to model: {request.model_name}",
     }
 
 
@@ -93,7 +98,7 @@ async def switch_model(
 async def compare_models_for_client(
     client_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
     """Run predictions for the target client using all available models,
     then compare outputs."""
@@ -101,9 +106,9 @@ async def compare_models_for_client(
     try:
         from app.clients.service.client_service import client_service
         from app.clients.service.logic import InputDataCleaner, InterventionMatrix
-        
+
         client = client_service.get_client(db, client_id)
-        
+
         # Format client object into string-based dict
         client_data = {
             "age": str(client.age),
@@ -129,36 +134,35 @@ async def compare_models_for_client(
             "currently_employed": str(int(client.currently_employed)),
             "substance_use": str(int(client.substance_use)),
             "time_unemployed": str(client.time_unemployed),
-            "need_mental_health_support_bool": str(int(client.need_mental_health_support_bool))
+            "need_mental_health_support_bool": str(
+                int(client.need_mental_health_support_bool)
+            ),
         }
-        
+
         # Clean and convert client data
         data_cleaner = InputDataCleaner()
         raw_data = data_cleaner.process(client_data)
-        
-        # Build baseline input row 
+
+        # Build baseline input row
         intervention_matrix = InterventionMatrix()
         baseline_row = intervention_matrix.get_baseline_row(raw_data).reshape(1, -1)
-        
+
         # Compare scores by all 4 models
         model_results = model_manager.compare_models(baseline_row)
-        
+
         # Prepare client info for response
         client_info = {
             "client_id": client_id,
             "age": client.age,
             "gender": "Male" if client.gender == 1 else "Female",
             "education_level": client.level_of_schooling,
-            "current_model": model_manager.get_current_model_name()
+            "current_model": model_manager.get_current_model_name(),
         }
-        
-        return {
-            "model_results": model_results,
-            "client_info": client_info
-        }
-        
+
+        return {"model_results": model_results, "client_info": client_info}
+
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error comparing models: {str(e)}"
+            detail=f"Error comparing models: {str(e)}",
         )
