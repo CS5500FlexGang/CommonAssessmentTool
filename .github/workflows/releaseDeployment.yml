@@ -43,10 +43,10 @@ jobs:
           DOCKER_CONTAINER_NAME: common-assessment-tool-container
           APP_PORT: 8000
         run: |
-          # Create a deployment script
+          # Create a deployment script with more debugging and explicit paths
           cat > deploy.sh << 'EOL'
           #!/bin/bash
-          set -e
+          set -ex
           
           # Get release tag from GitHub
           RELEASE_TAG=${{ github.event.release.tag_name }}
@@ -56,14 +56,29 @@ jobs:
           mkdir -p ~/app
           cd ~/app
           
+          # Show current directory for debugging
+          pwd
+          
           # Clean previous deployment
           if [ -d "./repo" ]; then
+            echo "Updating existing repository..."
             cd ./repo
             git fetch origin
             git checkout $RELEASE_TAG
           else
+            echo "Cloning fresh repository..."
             git clone --branch $RELEASE_TAG https://github.com/${{ github.repository }} ./repo
             cd ./repo
+          fi
+          
+          # Debug: List files to verify Dockerfile exists
+          echo "Files in repository directory:"
+          ls -la
+          
+          # Verify Dockerfile exists
+          if [ ! -f "Dockerfile" ]; then
+            echo "ERROR: Dockerfile not found!"
+            exit 1
           fi
           
           # Stop and remove previous container if it exists
@@ -98,4 +113,3 @@ jobs:
           
           # Execute deploy script on VM
           ssh -i ~/.ssh/id_rsa ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} "chmod +x ~/deploy.sh && DOCKER_CONTAINER_NAME=$DOCKER_CONTAINER_NAME DOCKER_IMAGE_NAME=$DOCKER_IMAGE_NAME APP_PORT=$APP_PORT bash ~/deploy.sh"
-
