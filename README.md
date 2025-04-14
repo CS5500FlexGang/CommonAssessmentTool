@@ -124,3 +124,15 @@ python -m pytest tests/
 # Build and test Docker image
 docker build -t fastapi-app .
 docker run -d -p 8000:8000 --name fastapi-backend fastapi-app
+
+------------------------- Backend Application - Common Assessment Tool-------------------------
+## Public Access
+The backend API is deployed and accessible at:
+http://3.142.42.78:8000
+
+Swagger API documentation is available at:
+http://3.142.42.78:8000/docs
+
+## Deployment Information
+- Hosted on AWS EC2
+- Region: us-east-2
