@@ -139,37 +139,63 @@ http://3.142.42.78:8000/docs
 ```
 
 ------------------------- Setting Up the Deployment Pipeline -------------------------
-### SSH Key Configuration
-# Generate an SSH key pair
+## SSH Key Configuration
+### Generate an SSH key pair
 ```bash
 ssh-keygen -t rsa -b 4096 -C "github-actions"
 ```
-# Add the public key to your VM's authorized_keys file
+### Add the public key to your VM's authorized_keys file
 ```bash
 cat ~/.ssh/id_rsa.pub | ssh your_username@your-vm-ip "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys"
 ```
 
-# Add the private key as a GitHub secret:
+### Add the private key as a GitHub secret:
 Go to your GitHub repository → Settings → Secrets and variables → Actions
 Create a new secret named SSH_PRIVATE_KEY with the content of your private key
 
-# Add two more required secrets:
+### Add two more required secrets:
 VM_HOST: The hostname or IP address of your VM
 VM_USER: The username for SSH login (e.g., ec2-user)
 
-### Docker Setup on VM
-# Ensure Docker is installed and running on your VM
+## Docker Setup on VM
+### Ensure Docker is installed and running on your VM
+### Note: This step is only required for initial setup. If you already have a working CD pipeline, Docker should already be installed on your VM.
+For Ubuntu/Debian-based VMs:
 ```bash
-sudo yum update -y
-sudo yum install -y docker
-sudo systemctl start docker
-sudo systemctl enable docker
-sudo usermod -a -G docker $USER
+# SSH into VM
+ssh your_username@vm-sm
+# Update packages
+sudo apt update
+# Install Docker if not already installed
+sudo apt install -y docker.io
+# Add your user to the docker group to avoid using sudo
+sudo usermod -aG docker $USER
+# Log out and back in for changes to take effect
+exit
+ssh your_username@vm-sm
 ```
 
-### The CD Workflow File
+For Amazon Linux-based VMs:
+```bash
+# SSH into VM
+ssh ec2-user@your-vm-ip
+# Update packages and install Docker
+sudo yum update -y
+sudo yum install -y docker
+# Start and enable Docker service
+sudo systemctl start docker
+sudo systemctl enable docker
+# Add your user to the docker group
+sudo usermod -a -G docker $USER
+# Log out and back in for changes to take effect
+exit
+ssh ec2-user@your-vm-ip
+```
+
+## The CD Workflow File
 The CD workflow is defined in .github/workflows/cd.yml. It triggers whenever a release is created from the master branch.
-# Creating a New Release
+
+## Creating a New Release
 To deploy a new version of the application:
 1. Make your code changes and push them to the main branch
 2. Go to your GitHub repository
@@ -180,26 +206,28 @@ To deploy a new version of the application:
 7. Click "Publish release"
 The CD workflow will automatically trigger and deploy your changes to the VM.
 
-### Monitoring Deployments
+## Monitoring Deployments
 To monitor the deployment process:
-Go to the "Actions" tab in your GitHub repository
-Click on the running or most recent "Continuous Deployment" workflow
-View the logs for each step of the deployment
+1. Go to the "Actions" tab in your GitHub repository
+2. Click on the running or most recent "Continuous Deployment" workflow
+3. 1View the logs for each step of the deployment
 
-### Verifying Deployment
+## Verifying Deployment
 To verify that your deployment was successful:
-Access your API documentation at: http://your-vm-ip:8000/docs
-Check that your changes are visible
-Test the API endpoints to ensure functionality
+1. Access your API documentation at: http://your-vm-ip:8000/docs
+2. Check that your changes are visible
+3. Test the API endpoints to ensure functionality
 
-### Troubleshooting
-# Port Already in Use
+## Troubleshooting
+### Port Already in Use
 If you see an error like:
 ```bash
 Error: listen tcp4 0.0.0.0:8000: bind: address already in use
 ```
 SSH into your VM and:
 ```bash
+# SSH into your VM
+ssh ec2-user@3.142.42.78
 # Find the process using port 8000
 sudo lsof -i :8000
 # Kill the process
