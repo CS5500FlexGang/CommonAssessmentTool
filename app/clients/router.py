@@ -53,7 +53,7 @@ async def get_client(
     service_and_db=Depends(get_service_with_db),
     current_user: User = Depends(get_admin_user),  # Required for authentication
 ):
-    """Get a specific client by ID"""
+    """Get a specific client by ID - - Updated by CD pipeline v1.0.4."""
     service, db = service_and_db
     return service.get_client(db, client_id)
 
